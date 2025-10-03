@@ -1,0 +1,52 @@
+cmake_minimum_required(VERSION 3.8)
+project(dense_ground_truth)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+# Find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+
+# Generate service interfaces
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/SampleGroundTruth.srv"
+)
+
+# Add executable
+add_executable(ground_truth_server dense_ground_truth/ground_truth_server.cpp)
+ament_target_dependencies(ground_truth_server rclcpp std_msgs geometry_msgs)
+
+# Link service interfaces
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(ground_truth_server "${cpp_typesupport_target}")
+
+# Install targets
+install(TARGETS
+  ground_truth_server
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# Install Python scripts
+install(PROGRAMS
+  scripts/gpr_visualization.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# Install config and launch files
+install(DIRECTORY
+  config
+  launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()

@@ -1,0 +1,17 @@
+ground_truth_server:
+  ros__parameters:
+    # Area boundaries (rectangular region)
+    area_min_x: 0.0
+    area_max_x: 100.0
+    area_min_y: 0.0
+    area_max_y: 100.0
+
+    # Number of Gaussian distributions
+    # Higher values create denser variations
+    num_gaussians: 100
+
+    # Lipschitz constant controls the rate of change
+    # Higher values create steeper gradients and more variation
+    # Lower values create smoother transitions
+    # Typical range: 1.0 (very smooth) to 50.0 (very steep)
+    lipschitz_constant: 10.0

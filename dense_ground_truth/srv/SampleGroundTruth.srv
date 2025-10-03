@@ -1,0 +1,6 @@
+# Request: 2D point to sample
+float64 x
+float64 y
+---
+# Response: scalar value at the given point
+float64 value
