@@ -8,10 +8,13 @@ ground_truth_server:
 
     # Number of Gaussian distributions
     # Higher values create denser variations
-    num_gaussians: 100
+    num_gaussians: 1000
+
+    # Seed for reproducible Gaussian placement (-1 uses nondeterministic seed)
+    random_seed: 42
 
     # Lipschitz constant controls the rate of change
     # Higher values create steeper gradients and more variation
     # Lower values create smoother transitions
     # Typical range: 1.0 (very smooth) to 50.0 (very steep)
-    lipschitz_constant: 10.0
+    lipschitz_constant: 1.0

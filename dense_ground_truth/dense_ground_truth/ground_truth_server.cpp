@@ -16,10 +16,12 @@ class DenseGroundTruthGenerator {
 public:
     DenseGroundTruthGenerator(double area_min_x, double area_max_x,
                               double area_min_y, double area_max_y,
-                              int num_gaussians, double lipschitz_constant)
+                              int num_gaussians, double lipschitz_constant,
+                              int random_seed)
         : area_min_x_(area_min_x), area_max_x_(area_max_x),
           area_min_y_(area_min_y), area_max_y_(area_max_y),
-          lipschitz_constant_(lipschitz_constant) {
+          lipschitz_constant_(lipschitz_constant),
+          random_seed_(random_seed) {
 
         generateGaussians(num_gaussians);
     }
@@ -42,8 +44,13 @@ public:
 
 private:
     void generateGaussians(int num_gaussians) {
-        std::random_device rd;
-        std::mt19937 gen(rd());
+        std::mt19937 gen;
+        if (random_seed_ >= 0) {
+            gen.seed(static_cast<unsigned int>(random_seed_));
+        } else {
+            std::random_device rd;
+            gen.seed(rd());
+        }
         std::uniform_real_distribution<> dis_x(area_min_x_, area_max_x_);
         std::uniform_real_distribution<> dis_y(area_min_y_, area_max_y_);
 
@@ -74,6 +81,7 @@ private:
     double area_min_x_, area_max_x_;
     double area_min_y_, area_max_y_;
     double lipschitz_constant_;
+    int random_seed_;
 };
 
 class GroundTruthServerNode : public rclcpp::Node {
@@ -86,6 +94,7 @@ public:
         this->declare_parameter<double>("area_max_y", 100.0);
         this->declare_parameter<int>("num_gaussians", 100);
         this->declare_parameter<double>("lipschitz_constant", 10.0);
+        this->declare_parameter<int>("random_seed", -1);
 
         // Get parameters
         double area_min_x = this->get_parameter("area_min_x").as_double();
@@ -94,11 +103,12 @@ public:
         double area_max_y = this->get_parameter("area_max_y").as_double();
         int num_gaussians = this->get_parameter("num_gaussians").as_int();
         double lipschitz_constant = this->get_parameter("lipschitz_constant").as_double();
+        int random_seed = this->get_parameter("random_seed").as_int();
 
         // Initialize ground truth generator
         generator_ = std::make_unique<DenseGroundTruthGenerator>(
             area_min_x, area_max_x, area_min_y, area_max_y,
-            num_gaussians, lipschitz_constant);
+            num_gaussians, lipschitz_constant, random_seed);
 
         // Create service
         service_ = this->create_service<dense_ground_truth::srv::SampleGroundTruth>(
@@ -111,6 +121,11 @@ public:
                     area_min_x, area_max_x, area_min_y, area_max_y);
         RCLCPP_INFO(this->get_logger(), "Number of Gaussians: %d", num_gaussians);
         RCLCPP_INFO(this->get_logger(), "Lipschitz constant: %.2f", lipschitz_constant);
+        if (random_seed >= 0) {
+            RCLCPP_INFO(this->get_logger(), "Random seed: %d (deterministic)", random_seed);
+        } else {
+            RCLCPP_INFO(this->get_logger(), "Random seed: random_device (non-deterministic)");
+        }
     }
 
 private:

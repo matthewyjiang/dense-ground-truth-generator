@@ -1,19 +1,39 @@
 #!/usr/bin/env python3
 
+import sys
+import warnings
+warnings.filterwarnings('ignore')
+
 import rclpy
 from rclpy.node import Node
 from dense_ground_truth.srv import SampleGroundTruth
-import numpy as np
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
-import matplotlib.pyplot as plt
-from matplotlib import cm
-import time
+
+# Import with compatibility handling
+try:
+    import numpy as np
+except ImportError:
+    print("ERROR: numpy is not installed. Install with: sudo apt install python3-numpy")
+    sys.exit(1)
+
+try:
+    from scipy.interpolate import Rbf
+except ImportError:
+    print("ERROR: scipy is not installed. Install with: sudo apt install python3-scipy")
+    sys.exit(1)
+
+try:
+    import matplotlib
+    matplotlib.use('Agg')  # Use non-interactive backend for compatibility
+    import matplotlib.pyplot as plt
+    from matplotlib import cm
+except ImportError:
+    print("ERROR: matplotlib is not installed. Install with: sudo apt install python3-matplotlib")
+    sys.exit(1)
 
 
-class GPRVisualization(Node):
+class RBFVisualization(Node):
     def __init__(self):
-        super().__init__('gpr_visualization')
+        super().__init__('rbf_visualization')
 
         # Declare parameters
         self.declare_parameter('num_training_points', 50)
@@ -39,7 +59,7 @@ class GPRVisualization(Node):
         self.get_logger().info('Ground truth service connected!')
 
         # Run visualization
-        self.run_gpr_visualization()
+        self.run_rbf_visualization()
 
     def sample_ground_truth(self, x, y):
         """Sample a point from the ground truth service."""
@@ -56,7 +76,7 @@ class GPRVisualization(Node):
             self.get_logger().error('Service call failed')
             return 0.0
 
-    def run_gpr_visualization(self):
+    def run_rbf_visualization(self):
         self.get_logger().info(f'Collecting {self.num_training} random training samples...')
 
         # Collect random training data
@@ -69,12 +89,12 @@ class GPRVisualization(Node):
 
         y_train = np.array([self.sample_ground_truth(x, y) for x, y in X_train])
 
-        self.get_logger().info('Training Gaussian Process Regressor...')
+        self.get_logger().info('Training RBF interpolator...')
 
-        # Train GPR
-        kernel = C(1.0, (1e-3, 1e3)) * RBF(10.0, (1e-2, 1e2))
-        gpr = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10, alpha=1e-6)
-        gpr.fit(X_train, y_train)
+        # Train RBF interpolator using a smooth multiquadric radial basis
+        # Using 'multiquadric' function which provides smooth interpolation
+        rbf_interpolator = Rbf(X_train[:, 0], X_train[:, 1], y_train,
+                               function='multiquadric', smooth=0.1)
 
         self.get_logger().info('Creating test grid for evaluation...')
 
@@ -89,15 +109,14 @@ class GPRVisualization(Node):
         # Get ground truth values
         y_true = np.array([self.sample_ground_truth(x, y) for x, y in X_test])
 
-        self.get_logger().info('Computing GPR predictions...')
+        self.get_logger().info('Computing RBF predictions...')
 
-        # Get GPR predictions
-        y_pred, sigma = gpr.predict(X_test, return_std=True)
+        # Get RBF predictions
+        y_pred = rbf_interpolator(X_test[:, 0], X_test[:, 1])
 
         # Reshape for plotting
         y_true_grid = y_true.reshape(X_grid.shape)
         y_pred_grid = y_pred.reshape(X_grid.shape)
-        sigma_grid = sigma.reshape(X_grid.shape)
 
         # Calculate accuracy metrics
         mse = np.mean((y_true - y_pred) ** 2)
@@ -127,11 +146,11 @@ class GPRVisualization(Node):
         ax1.legend()
         fig.colorbar(surf1, ax=ax1, shrink=0.5)
 
-        # GPR Prediction
+        # RBF Prediction
         ax2 = fig.add_subplot(2, 3, 2, projection='3d')
         surf2 = ax2.plot_surface(X_grid, Y_grid, y_pred_grid, cmap=cm.viridis, alpha=0.8)
         ax2.scatter(X_train[:, 0], X_train[:, 1], y_train, c='red', s=50, marker='o', label='Training samples')
-        ax2.set_title('GPR Prediction', fontsize=14, fontweight='bold')
+        ax2.set_title('RBF Interpolation', fontsize=14, fontweight='bold')
         ax2.set_xlabel('X')
         ax2.set_ylabel('Y')
         ax2.set_zlabel('Value')
@@ -160,7 +179,7 @@ class GPRVisualization(Node):
         ax5 = fig.add_subplot(2, 3, 5)
         im5 = ax5.contourf(X_grid, Y_grid, y_pred_grid, levels=20, cmap=cm.viridis)
         ax5.scatter(X_train[:, 0], X_train[:, 1], c='red', s=30, marker='x', linewidths=2)
-        ax5.set_title('GPR Prediction (2D)', fontsize=14, fontweight='bold')
+        ax5.set_title('RBF Interpolation (2D)', fontsize=14, fontweight='bold')
         ax5.set_xlabel('X')
         ax5.set_ylabel('Y')
         fig.colorbar(im5, ax=ax5)
@@ -184,14 +203,15 @@ class GPRVisualization(Node):
                  horizontalalignment='center', bbox=props)
 
         plt.tight_layout(rect=[0, 0.05, 1, 1])
-        plt.savefig('/tmp/gpr_ground_truth_visualization.png', dpi=150, bbox_inches='tight')
-        self.get_logger().info('Visualization saved to /tmp/gpr_ground_truth_visualization.png')
-        plt.show()
+        plt.savefig('/tmp/rbf_ground_truth_visualization.png', dpi=150, bbox_inches='tight')
+        self.get_logger().info('Visualization saved to /tmp/rbf_ground_truth_visualization.png')
+        self.get_logger().info('View with: xdg-open /tmp/rbf_ground_truth_visualization.png')
+        plt.close()
 
 
 def main(args=None):
     rclpy.init(args=args)
-    node = GPRVisualization()
+    node = RBFVisualization()
     rclpy.shutdown()
 
 

@@ -1,6 +1,6 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import ExecuteProcess, TimerAction
+from launch.actions import TimerAction
 from ament_index_python.packages import get_package_share_directory
 import os
 
@@ -22,17 +22,17 @@ def generate_launch_description():
         emulate_tty=True
     )
 
-    # GPR visualization node (delayed start to ensure server is ready)
-    gpr_visualization = TimerAction(
+    # RBF visualization node (delayed start to ensure server is ready)
+    rbf_visualization = TimerAction(
         period=2.0,
         actions=[
             Node(
                 package='dense_ground_truth',
-                executable='gpr_visualization.py',
-                name='gpr_visualization',
+                executable='rbf_visualization.py',
+                name='rbf_visualization',
                 output='screen',
                 parameters=[{
-                    'num_training_points': 50,
+                    'num_training_points': 200,
                     'grid_resolution': 50,
                     'area_min_x': 0.0,
                     'area_max_x': 100.0,
@@ -46,5 +46,5 @@ def generate_launch_description():
 
     return LaunchDescription([
         ground_truth_server,
-        gpr_visualization
+        rbf_visualization
     ])

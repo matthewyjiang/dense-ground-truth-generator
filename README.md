@@ -28,15 +28,12 @@ dense_ground_truth/
 
 ## Installation
 
-### Install Python Dependencies
+### Install Python Dependencies (Ubuntu 22.04)
 
+Use system packages to ensure compatibility:
 ```bash
-pip3 install numpy matplotlib scikit-learn
-```
-
-Or install system packages (Ubuntu/Debian):
-```bash
-sudo apt install python3-numpy python3-matplotlib python3-sklearn
+sudo apt update
+sudo apt install python3-numpy python3-matplotlib python3-scipy
 ```
 
 ### Building
@@ -53,6 +50,7 @@ Edit `config/ground_truth_params.yaml` to tune parameters:
 
 - **area_min_x, area_max_x, area_min_y, area_max_y**: Define the rectangular region bounds
 - **num_gaussians**: Number of Gaussian distributions (higher = denser variations)
+- **random_seed**: Seed for deterministic Gaussian placement (`-1` uses nondeterministic seeding)
 - **lipschitz_constant**: Controls rate of change (higher = steeper gradients, lower = smoother)
 
 ## Running
@@ -100,33 +98,33 @@ class GroundTruthClient(Node):
 **Response:**
 - `float64 value`: Scalar value at the point
 
-## Gaussian Process Regression Visualization
+## RBF Interpolation Visualization
 
-Run the GPR demo to visualize how well Gaussian Process Regression can learn the ground truth:
+Run the demo to visualize how well RBF (Radial Basis Function) interpolation can learn the ground truth:
 
 ```bash
-ros2 launch dense_ground_truth gpr_demo.launch.py
+ros2 launch dense_ground_truth rbf_demo.launch.py
 ```
 
 This will:
 1. Start the ground truth server
 2. Randomly sample 50 training points
-3. Train a Gaussian Process Regressor on those points
+3. Train an RBF interpolator on those points
 4. Evaluate accuracy on a dense grid
 5. Display a comprehensive visualization with:
    - Ground truth (3D and 2D)
-   - GPR prediction (3D and 2D)
+   - RBF interpolation prediction (3D and 2D)
    - Absolute error visualization
    - Accuracy metrics (RMSE, MAE, Max Error, R² Score)
 
-The visualization is saved to `/tmp/gpr_ground_truth_visualization.png`.
+The visualization is saved to `/tmp/rbf_ground_truth_visualization.png`.
 
 ### Customize the Demo
 
 You can adjust the number of training samples and grid resolution in the launch file or via command line:
 
 ```bash
-ros2 run dense_ground_truth gpr_visualization.py --ros-args \
+ros2 run dense_ground_truth rbf_visualization.py --ros-args \
   -p num_training_points:=100 \
   -p grid_resolution:=80
 ```
@@ -138,11 +136,11 @@ ros2 run dense_ground_truth gpr_visualization.py --ros-args \
 3. When a point is sampled, the value is computed as the sum of all Gaussian contributions
 4. The Lipschitz constant inversely affects the standard deviation, controlling variation density
 
-### GPR Learning
+### RBF Learning
 
-The GPR visualization demonstrates:
+The RBF interpolation visualization demonstrates:
 - **Random Sampling**: Training points are uniformly sampled across the area
-- **GP Training**: A Gaussian Process with RBF kernel learns the underlying function
-- **Interpolation**: GPR provides smooth interpolation between training points
-- **Uncertainty**: The visualization shows where the model is confident vs uncertain
-- **Accuracy Metrics**: Quantifies how well GPR approximates the ground truth
+- **RBF Training**: Radial Basis Function interpolator learns the underlying function
+- **Interpolation**: RBF provides smooth interpolation between training points
+- **Accuracy Metrics**: Quantifies how well RBF approximates the ground truth
+- **Ubuntu 22.04 Compatible**: Uses scipy instead of sklearn to avoid version conflicts

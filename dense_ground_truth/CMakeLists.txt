@@ -33,7 +33,7 @@ install(TARGETS
 
 # Install Python scripts
 install(PROGRAMS
-  scripts/gpr_visualization.py
+  scripts/rbf_visualization.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
