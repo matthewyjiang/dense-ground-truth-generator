@@ -18,3 +18,13 @@ ground_truth_server:
     # Lower values create smoother transitions
     # Typical range: 1.0 (very smooth) to 50.0 (very steep)
     lipschitz_constant: 1.0
+
+spatial_measurement_publisher:
+  ros__parameters:
+    pose_topic: spirit/current_pose
+    measurement_topic: spirit/spatial_measurements
+    publish_interval: 1.0
+    service_name: sample_ground_truth
+    source_name: ground_truth
+    unit: unitless
+    default_uncertainty: 0.0

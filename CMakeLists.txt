@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(trusses_custom_interfaces REQUIRED)
 
 # Generate service interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -34,6 +35,7 @@ install(TARGETS
 # Install Python scripts
 install(PROGRAMS
   scripts/rbf_visualization.py
+  scripts/spatial_measurement_publisher.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
