@@ -13,17 +13,20 @@ A ROS2 Humble package that generates dense ground truth data using multiple Gaus
 ## Package Structure
 
 ```
-dense_ground_truth/
+./
+├── CMakeLists.txt
 ├── config/
 │   └── ground_truth_params.yaml    # Configuration file
-├── dense_ground_truth/
+├── dense_ground_truth_generator/
 │   └── ground_truth_server.cpp     # Main service node
 ├── launch/
 │   └── ground_truth_server.launch.py
-├── srv/
-│   └── SampleGroundTruth.srv       # Service definition
-├── CMakeLists.txt
-└── package.xml
+├── package.xml
+├── requirements.txt
+├── scripts/
+│   └── rbf_visualization.py
+└── srv/
+    └── SampleGroundTruth.srv       # Service definition
 ```
 
 ## Installation
@@ -40,7 +43,7 @@ sudo apt install python3-numpy python3-matplotlib python3-scipy
 
 ```bash
 cd /home/emgym/dense-ground-truth-generator
-colcon build --packages-select dense_ground_truth
+colcon build --packages-select dense_ground_truth_generator
 source install/setup.bash
 ```
 
@@ -56,7 +59,7 @@ Edit `config/ground_truth_params.yaml` to tune parameters:
 ## Running
 
 ```bash
-ros2 launch dense_ground_truth ground_truth_server.launch.py
+ros2 launch dense_ground_truth_generator ground_truth_server.launch.py
 ```
 
 ## Usage
@@ -64,7 +67,7 @@ ros2 launch dense_ground_truth ground_truth_server.launch.py
 Call the service to sample a point:
 
 ```bash
-ros2 service call /sample_ground_truth dense_ground_truth/srv/SampleGroundTruth "{x: 50.0, y: 50.0}"
+ros2 service call /sample_ground_truth dense_ground_truth_generator/srv/SampleGroundTruth "{x: 50.0, y: 50.0}"
 ```
 
 ### Python Client Example
@@ -72,7 +75,7 @@ ros2 service call /sample_ground_truth dense_ground_truth/srv/SampleGroundTruth 
 ```python
 import rclpy
 from rclpy.node import Node
-from dense_ground_truth.srv import SampleGroundTruth
+from dense_ground_truth_generator.srv import SampleGroundTruth
 
 class GroundTruthClient(Node):
     def __init__(self):
@@ -103,7 +106,7 @@ class GroundTruthClient(Node):
 Run the demo to visualize how well RBF (Radial Basis Function) interpolation can learn the ground truth:
 
 ```bash
-ros2 launch dense_ground_truth rbf_demo.launch.py
+ros2 launch dense_ground_truth_generator rbf_demo.launch.py
 ```
 
 This will:
@@ -124,7 +127,7 @@ The visualization is saved to `/tmp/rbf_ground_truth_visualization.png`.
 You can adjust the number of training samples and grid resolution in the launch file or via command line:
 
 ```bash
-ros2 run dense_ground_truth rbf_visualization.py --ros-args \
+ros2 run dense_ground_truth_generator rbf_visualization.py --ros-args \
   -p num_training_points:=100 \
   -p grid_resolution:=80
 ```

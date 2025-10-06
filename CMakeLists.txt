@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(dense_ground_truth)
+project(dense_ground_truth_generator)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -18,7 +18,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 
 # Add executable
-add_executable(ground_truth_server dense_ground_truth/ground_truth_server.cpp)
+add_executable(ground_truth_server dense_ground_truth_generator/ground_truth_server.cpp)
 ament_target_dependencies(ground_truth_server rclcpp std_msgs geometry_msgs)
 
 # Link service interfaces

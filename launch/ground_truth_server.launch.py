@@ -6,14 +6,14 @@ import os
 
 def generate_launch_description():
     # Get the package directory
-    pkg_dir = get_package_share_directory('dense_ground_truth')
+    pkg_dir = get_package_share_directory('dense_ground_truth_generator')
 
     # Path to the configuration file
     config_file = os.path.join(pkg_dir, 'config', 'ground_truth_params.yaml')
 
     return LaunchDescription([
         Node(
-            package='dense_ground_truth',
+            package='dense_ground_truth_generator',
             executable='ground_truth_server',
             name='ground_truth_server',
             output='screen',

@@ -6,7 +6,7 @@ warnings.filterwarnings('ignore')
 
 import rclpy
 from rclpy.node import Node
-from dense_ground_truth.srv import SampleGroundTruth
+from dense_ground_truth_generator.srv import SampleGroundTruth
 
 # Import with compatibility handling
 try:
