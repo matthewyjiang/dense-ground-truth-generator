@@ -34,10 +34,10 @@ def generate_launch_description():
                 parameters=[{
                     'num_training_points': 200,
                     'grid_resolution': 50,
-                    'area_min_x': 0.0,
-                    'area_max_x': 100.0,
-                    'area_min_y': 0.0,
-                    'area_max_y': 100.0,
+                    'area_min_x': -15.0,
+                    'area_max_x': 15.0,
+                    'area_min_y': -15.0,
+                    'area_max_y': 15.0,
                 }],
                 emulate_tty=True
             )

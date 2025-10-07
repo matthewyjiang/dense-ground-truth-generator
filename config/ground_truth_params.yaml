@@ -1,14 +1,14 @@
 ground_truth_server:
   ros__parameters:
     # Area boundaries (rectangular region)
-    area_min_x: 0.0
-    area_max_x: 100.0
-    area_min_y: 0.0
-    area_max_y: 100.0
+    area_min_x: -15.0
+    area_max_x: 15.0
+    area_min_y: -15.0
+    area_max_y: 15.0
 
     # Number of Gaussian distributions
     # Higher values create denser variations
-    num_gaussians: 1000
+    num_gaussians: 300
 
     # Seed for reproducible Gaussian placement (-1 uses nondeterministic seed)
     random_seed: 42
