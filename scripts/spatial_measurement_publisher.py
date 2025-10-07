@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import functools
+import random
 
 import rclpy
 from rclpy.node import Node
@@ -24,6 +25,7 @@ class SpatialMeasurementPublisher(Node):
         self.declare_parameter("source_name", "ground_truth")
         self.declare_parameter("unit", "unitless")
         self.declare_parameter("default_uncertainty", 0.0)
+        self.declare_parameter("gaussian_noise_stddev", 0.0)
 
         pose_topic = self.get_parameter("pose_topic").get_parameter_value().string_value
         measurement_topic = (
@@ -97,7 +99,11 @@ class SpatialMeasurementPublisher(Node):
         measurement.position.x = pose.position.x
         measurement.position.y = pose.position.y
         measurement.position.z = pose.position.z
-        measurement.value = response.value
+        noise_stddev = (
+            self.get_parameter("gaussian_noise_stddev").get_parameter_value().double_value
+        )
+        noise = random.gauss(0.0, noise_stddev) if noise_stddev > 0.0 else 0.0
+        measurement.value = response.value + noise
         measurement.unit = self.unit
         measurement.source_name = self.source_name
         measurement.uncertainty = self.default_uncertainty
